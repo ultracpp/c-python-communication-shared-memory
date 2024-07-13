@@ -1,5 +1,5 @@
 /*
- * C RB Hash Map - Hash Map Implementation in C Language
+ * c-python-communication-shared-memory - IPC between C and Python
  * Copyright (c) 2024 Eungsuk Jeon
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
