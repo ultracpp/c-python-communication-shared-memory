@@ -13,7 +13,7 @@ The C program (`shared_memory.c` and `shared_memory.h`) initializes shared memor
 - **shared_memory_read**: Reads a message from shared memory.
 - **shared_memory_release**: Releases shared memory and semaphore resources.
 
-### Python Program (`test_shared_memory.py`)
+### Python Program (`test_shm.py`)
 
 The Python script (`shared_memory_python.py`) interacts with the shared memory created by the C program. It uses the `mmap` module for memory mapping and `posix_ipc` module for semaphore handling.
 
@@ -51,10 +51,10 @@ After receiving and preprocessing messages from Kafka or MQTT, the Python progra
 
 2. **Run Python Script**:
    - Install required Python packages (`pip install posix_ipc` for POSIX systems and additional libraries for Kafka or MQTT integration).
-   - Execute `shared_memory_python.py` with appropriate permissions (`python test_shared_memory.py`).
+   - Execute `shared_memory_python.py` with appropriate permissions (`python test_shm.py`).
 
 3. **Execution Order**:
-   - It is crucial to execute the C program (`shared_memory`) before running the Python script (`test_shared_memory.py`). The C program initializes the shared memory region and semaphore, which the Python script then interacts with.
+   - It is crucial to execute the C program (`shared_memory`) before running the Python script (`test_shm.py`). The C program initializes the shared memory region and semaphore, which the Python script then interacts with.
 
 4. **Cross-Compilation between Windows and Linux**:
    - This project supports cross-compilation, enabling seamless operation across both Windows and Linux platforms. Ensure appropriate toolchains and dependencies are configured for each platform.
