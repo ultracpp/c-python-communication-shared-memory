@@ -13,6 +13,13 @@ The C program (`shared_memory.c` and `shared_memory.h`) initializes shared memor
 - **shared_memory_read**: Reads a message from shared memory.
 - **shared_memory_release**: Releases shared memory and semaphore resources.
 
+### Python Program (`main.c`)
+
+The Python script (`main.c`) contains main functionalities related to data processing and shared memory interactions.
+
+- **test_write**: Continuously writes messages to shared memory.
+- **test_read**: Continuously reads messages from shared memory.
+  
 ### Python Program (`shared_memory.py`)
 
 The Python script (`shared_memory.py`) interacts with the shared memory created by the C program. It uses the `mmap` module for memory mapping and `posix_ipc` module for semaphore handling. For Windows environments, `win32event` is used for event-based synchronization.
