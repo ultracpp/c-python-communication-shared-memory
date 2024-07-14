@@ -28,27 +28,30 @@
 
 #define SHM_NAME "/my_shared_memory"
 #define SHM_SIZE 1024
-#define SEM_NAME "/my_semaphore"
+#define SEM_READ_NAME "/my_semaphore_read"
+#define SEM_WRITE_NAME "/my_semaphore_write"
 
 #ifdef _WIN32
 typedef struct _tag_shared_memory
 {
     HANDLE hMapFile;
-    HANDLE hEvent;
     LPCTSTR pBuf;
+    HANDLE hSemRead;
+    HANDLE hSemWrite;
 } shared_memory;
 #else
 typedef struct _tag_shared_memory
 {
     int shm_fd;
     char* shm_base;
-    sem_t* sem;
+    sem_t* sem_read;
+    sem_t* sem_write;
 } shared_memory;
 #endif
 
 void shared_memory_init(shared_memory* shm);
-void shared_memory_write(shared_memory* shm, const char* message);
 void shared_memory_read(shared_memory* shm, char* buffer);
+void shared_memory_write(shared_memory* shm, const char* message);
 void shared_memory_release(shared_memory* shm);
 
 #endif
