@@ -13,7 +13,7 @@ The C program (`shared_memory.c` and `shared_memory.h`) initializes shared memor
 - **shared_memory_read**: Reads a message from shared memory.
 - **shared_memory_release**: Releases shared memory and semaphore resources.
 
-### Python Program (`main.c`)
+### C Program (`main.c`)
 
 The Python script (`main.c`) contains main functionalities related to data processing and shared memory interactions.
 
