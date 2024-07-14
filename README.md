@@ -18,6 +18,11 @@ The C program consists of two source files:
 - **shared_memory_read**: Reads a message from shared memory.
 - **shared_memory_release**: Releases shared memory and semaphore resources.
 
+#### Functions in `main.c`
+
+- **test_write**: Continuously writes messages to shared memory.
+- **test_read**: Continuously reads messages from shared memory.
+
 ### Python Program (`shared_memory.py`)
 
 The Python script (`shared_memory.py`) interacts with the shared memory created by the C program. It uses the `mmap` module for memory mapping and `posix_ipc` module for semaphore handling. For Windows environments, `win32event` is used for event-based synchronization.
