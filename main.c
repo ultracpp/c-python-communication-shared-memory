@@ -1,4 +1,4 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
@@ -15,15 +15,34 @@ void sig_handler(int signo);
 
 shared_memory shm;
 
-int main()
+int main(int argc, char* argv[])
 {
-#ifndef _WIN32
-    signal(SIGINT, sig_handler);
-#endif
+    //char* mode = "write";
+    char* mode = "write";
+
+/*#ifndef _WIN32
+    if (strcmp(mode, "read") == 0)
+    {
+        signal(SIGINT, sig_handler);
+    }
+#endif*/
+
     shared_memory_init(&shm);
 
-    test_write(&shm);
-    //test_read(&shm);
+    if (strcmp(mode, "write") == 0)
+    {
+        test_write(&shm);
+    }
+    else if (strcmp(mode, "read") == 0)
+    {
+        test_read(&shm);
+    }
+    else
+    {
+        printf("Invalid mode. Use 'write' or 'read'.\n");
+        shared_memory_release(&shm);
+        return 1;
+    }
 
     shared_memory_release(&shm);
     return 0;
