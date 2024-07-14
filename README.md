@@ -6,20 +6,18 @@ This project demonstrates interprocess communication (IPC) between C and Python 
 
 ### C Program (`shared_memory`)
 
-The C program (`shared_memory.c` and `shared_memory.h`) initializes shared memory and a semaphore for synchronization. It provides functions to write data to and read data from shared memory.
+The C program consists of two source files:
+
+- **`shared_memory.c`**: Initializes shared memory and a semaphore for synchronization. Provides functions to write data to and read data from shared memory.
+- **`main.c`**: Contains main functionalities related to data processing and shared memory interactions.
+
+#### Functions in `shared_memory.c`:
 
 - **shared_memory_init**: Initializes shared memory and semaphore.
 - **shared_memory_write**: Writes a message to shared memory.
 - **shared_memory_read**: Reads a message from shared memory.
 - **shared_memory_release**: Releases shared memory and semaphore resources.
 
-### C Program (`main.c`)
-
-The C program (`main.c`) contains main functionalities related to data processing and shared memory interactions.
-
-- **test_write**: Continuously writes messages to shared memory.
-- **test_read**: Continuously reads messages from shared memory.
-  
 ### Python Program (`shared_memory.py`)
 
 The Python script (`shared_memory.py`) interacts with the shared memory created by the C program. It uses the `mmap` module for memory mapping and `posix_ipc` module for semaphore handling. For Windows environments, `win32event` is used for event-based synchronization.
@@ -58,9 +56,9 @@ After receiving and preprocessing messages from Kafka or MQTT, the Python progra
 
 ## Usage
 
-1. **Compile and Run C Program**:
-   - **POSIX (Linux)**: Ensure `shared_memory.c` and `shared_memory.h` are compiled and built (`gcc -o shared_memory shared_memory.c -lrt`).
-   - **Windows (MSVC)**: Use Visual Studio Command Prompt or Developer Command Prompt for Visual Studio to compile (`cl shared_memory.c`) and link (`link shared_memory.obj`) the program.
+1. **Compile C Programs**:
+   - **POSIX (Linux)**: Ensure `shared_memory.c` and `main.c` are compiled and built (`gcc -o shared_memory shared_memory.c main.c -lrt`).
+   - **Windows (MSVC)**: Use Visual Studio Command Prompt or Developer Command Prompt for Visual Studio to compile (`cl shared_memory.c main.c`) and link (`link shared_memory.obj main.obj`) the program.
 
 2. **Run Python Script**:
    - Install required Python packages (`pip install posix_ipc` for POSIX systems and `pip install pywin32` for Windows), and additional libraries for Kafka or MQTT integration.
