@@ -15,7 +15,7 @@ The C program (`shared_memory.c` and `shared_memory.h`) initializes shared memor
 
 ### C Program (`main.c`)
 
-The Python script (`main.c`) contains main functionalities related to data processing and shared memory interactions.
+The C program (`main.c`) contains main functionalities related to data processing and shared memory interactions.
 
 - **test_write**: Continuously writes messages to shared memory.
 - **test_read**: Continuously reads messages from shared memory.
