@@ -34,18 +34,18 @@
 #ifdef _WIN32
 typedef struct _tag_shared_memory
 {
-    HANDLE hMapFile;
-    LPCTSTR pBuf;
-    HANDLE hSemRead;
-    HANDLE hSemWrite;
+	HANDLE hMapFile;
+	LPCTSTR pBuf;
+	HANDLE hSemRead;
+	HANDLE hSemWrite;
 } shared_memory;
 #else
 typedef struct _tag_shared_memory
 {
-    int shm_fd;
-    char* shm_base;
-    sem_t* sem_read;
-    sem_t* sem_write;
+	int shm_fd;
+	char* shm_base;
+	sem_t* sem_read;
+	sem_t* sem_write;
 } shared_memory;
 #endif
 
