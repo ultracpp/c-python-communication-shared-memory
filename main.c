@@ -17,34 +17,60 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <signal.h>
-#ifndef _WIN32
 #include <unistd.h>
 #endif
 
 #include "shared_memory.h"
 
+#ifdef _DEBUG
+#include <vld.h>
+#endif
+
 void test_write(shared_memory* shm);
 void test_read(shared_memory* shm);
+void batch_write(shared_memory* shm);
+void batch_read(shared_memory* shm);
 #ifndef _WIN32
 void sig_handler(int signo);
 #endif
 
 shared_memory shm;
+char global_buffer[SHM_SIZE];
+size_t buffer_offset = 0;
+time_t last_flush_time;
+
+static void flush_buffer(shared_memory* shm)
+{
+	if (buffer_offset > 0)
+	{
+		global_buffer[buffer_offset] = '\0';
+		shared_memory_write(shm, global_buffer);
+		memset(global_buffer, 0, SHM_SIZE);
+		buffer_offset = 0;
+		last_flush_time = time(NULL);
+	}
+}
 
 int main(int argc, char* argv[])
 {
-	//char* mode = "read";
-	char* mode = "write";
+	char* mode = argc > 1 ? argv[1] : "batch_write";
 
-/*#ifndef _WIN32
-	if (strcmp(mode, "read") == 0)
+#ifndef _WIN32
+	if (strcmp(mode, "read") == 0 || strcmp(mode, "batch_read") == 0)
 	{
 		signal(SIGINT, sig_handler);
 	}
-#endif*/
+#endif
 
 	shared_memory_init(&shm);
+
+	memset(global_buffer, 0, SHM_SIZE);
+	last_flush_time = time(NULL);
 
 	if (strcmp(mode, "write") == 0)
 	{
@@ -54,9 +80,17 @@ int main(int argc, char* argv[])
 	{
 		test_read(&shm);
 	}
+	else if (strcmp(mode, "batch_write") == 0)
+	{
+		batch_write(&shm);
+	}
+	else if (strcmp(mode, "batch_read") == 0)
+	{
+		batch_read(&shm);
+	}
 	else
 	{
-		printf("Invalid mode. Use 'write' or 'read'.\n");
+		printf("Invalid mode. Use 'write', 'read', 'batch_write', or 'batch_read'.\n");
 		shared_memory_release(&shm);
 		return 1;
 	}
@@ -70,12 +104,10 @@ void test_write(shared_memory* shm)
 	char message[SHM_SIZE];
 	int idx = 0;
 
-	while (1)
+	for (int i = 0; i < 10000; i++)
 	{
 		snprintf(message, SHM_SIZE, "Hello from C! %d", idx++);
-
 		shared_memory_write(shm, message);
-
 #ifdef _WIN32
 		Sleep(1);
 #else
@@ -88,10 +120,63 @@ void test_read(shared_memory* shm)
 {
 	char buffer[SHM_SIZE];
 
-	while (1)
+	for (int i = 0; i < 10000; i++)
 	{
 		shared_memory_read(shm, buffer);
-		printf("Received message from shared memory: %s\n", buffer);
+		printf("%s\n", buffer);
+	}
+}
+
+void batch_write(shared_memory* shm)
+{
+	char message[SHM_SIZE];
+	int idx = 0;
+
+	for (int i = 0; i < 10000; i++)
+	{
+		time_t current_time = time(NULL);
+		snprintf(message, SHM_SIZE, "Hello from C! %d", idx++);
+		size_t msg_len = strlen(message);
+
+		if (buffer_offset + msg_len + 1 >= SHM_SIZE || difftime(current_time, last_flush_time) >= 1.0)
+		{
+			flush_buffer(shm);
+		}
+
+		memcpy(global_buffer + buffer_offset, message, msg_len);
+		buffer_offset += msg_len;
+		global_buffer[buffer_offset++] = '\n';
+	}
+
+	if (buffer_offset > 0)
+	{
+		flush_buffer(shm);
+	}
+}
+
+void batch_read(shared_memory* shm)
+{
+	char buffer[SHM_SIZE];
+
+	while (1)
+	//for (int i = 0, j = 10; i < j; i++)
+	{
+		memset(buffer, 0, SHM_SIZE);
+		shared_memory_read(shm, buffer);
+		printf("================\n");
+
+		char* token = strtok(buffer, "\n");
+		while (token)
+		{
+			printf("%s\n", token);
+			token = strtok(NULL, "\n");
+		}
+
+#ifdef _WIN32
+		Sleep(1);
+#else
+		usleep(1000);
+#endif
 	}
 }
 
@@ -100,9 +185,10 @@ void sig_handler(int signo)
 {
 	if (signo == SIGINT)
 	{
-		printf("\nReceived SIGINT signal, releasing shared memory...\n");
+		printf("\nReleasing shared memory...\n");
 		shared_memory_release(&shm);
 		exit(1);
 	}
 }
 #endif
+
