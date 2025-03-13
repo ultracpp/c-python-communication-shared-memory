@@ -27,7 +27,7 @@
 #endif
 
 #define SHM_NAME "/my_shared_memory"
-#define SHM_SIZE 1024
+#define SHM_SIZE 4096
 #define SEM_READ_NAME "/my_semaphore_read"
 #define SEM_WRITE_NAME "/my_semaphore_write"
 
