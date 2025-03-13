@@ -40,7 +40,6 @@ def init_shared_memory(mode):
 		import posix_ipc
 		import mmap
 
-		# 공유 메모리 크기를 처음부터 설정
 		shm = posix_ipc.SharedMemory(SHM_NAME, posix_ipc.O_CREAT, size=SHM_SIZE)
 		sem_read = posix_ipc.Semaphore(SEM_READ_NAME, posix_ipc.O_CREAT, initial_value=0)
 		sem_write = posix_ipc.Semaphore(SEM_WRITE_NAME, posix_ipc.O_CREAT, initial_value=0)
@@ -56,7 +55,7 @@ def init_shared_memory(mode):
 		else:
 			raise ValueError("Invalid mode. Use 'read' or 'write'.")
 
-		shm.close_fd()  # 매핑 후 파일 디스크립터 닫기
+		shm.close_fd()
 
 def read_from_shared_memory(shm):
 	try:
@@ -75,6 +74,46 @@ def write_to_shared_memory(shm, message):
 		shm.seek(0)
 	except Exception as e:
 		print(f"Error writing to shared memory: {e}")
+
+import struct
+
+def read_binary_from_shared_memory(shm):
+	try:
+		shm.seek(0)
+		length_bytes = shm.read(2)
+		if len(length_bytes) < 2:
+			raise ValueError("Not enough data to read length")
+
+		length = struct.unpack('>h', length_bytes)[0]
+		if length < 0:
+			raise ValueError("Negative length detected")
+
+		data = shm.read(length)
+		if len(data) < length:
+			raise ValueError("Not enough data in shared memory")
+
+		shm.seek(0)
+		return data
+	except Exception as e:
+		print(f"Error reading binary from shared memory: {e}")
+		return None
+
+def write_binary_to_shared_memory(shm, data):
+	try:
+		length = len(data)
+		if length > SHM_SIZE - 2:
+			raise ValueError(f"Data length {length} exceeds maximum {SHM_SIZE - 2}")
+		if length > 32767:
+			raise ValueError(f"Data length {length} exceeds short max value 32767")
+
+		length_bytes = struct.pack('>h', length)
+
+		shm.seek(0)
+		shm.write(length_bytes)
+		shm.write(data)
+		shm.seek(0)
+	except Exception as e:
+		print(f"Error writing binary to shared memory: {e}")
 
 def release_shared_memory(shm, event):
 	if sys.platform == "win32":
