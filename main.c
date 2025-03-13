@@ -33,6 +33,8 @@
 
 void test_write(shared_memory* shm);
 void test_read(shared_memory* shm);
+void test_write_binary(shared_memory* shm);
+void test_read_binary(shared_memory* shm);
 void batch_write(shared_memory* shm);
 void batch_read(shared_memory* shm);
 #ifndef _WIN32
@@ -79,6 +81,14 @@ int main(int argc, char* argv[])
 	else if (strcmp(mode, "read") == 0)
 	{
 		test_read(&shm);
+	}
+	else if (strcmp(mode, "bin_write") == 0)
+	{
+		test_write_binary(&shm);
+	}
+	else if (strcmp(mode, "bin_read") == 0)
+	{
+		test_read_binary(&shm);
 	}
 	else if (strcmp(mode, "batch_write") == 0)
 	{
@@ -127,12 +137,57 @@ void test_read(shared_memory* shm)
 	}
 }
 
+void test_write_binary(shared_memory* shm)
+{
+	char data[SHM_SIZE - 2];
+	int idx = 0;
+
+	for (int i = 0; i < 10000; i++)
+	{
+		data[0] = idx % 256;
+		data[1] = 0xAA;
+		data[2] = 0xBB;
+		data[3] = 0xCC;
+		short length = 4;
+
+		shared_memory_write_binary(shm, data, length);
+		idx++;
+
+#ifdef _WIN32
+		Sleep(1);
+#else
+		usleep(1000);
+#endif
+	}
+}
+
+void test_read_binary(shared_memory* shm)
+{
+	char buffer[SHM_SIZE - 2];
+	short length;
+
+	for (int i = 0; i < 10000; i++)
+	{
+		shared_memory_read_binary(shm, buffer, &length);
+
+		if (length > 0)
+		{
+			printf("Received binary data (length=%d): ", length);
+			for (int j = 0; j < length; j++)
+			{
+				printf("%02x ", (unsigned char)buffer[j]);
+			}
+			printf("\n");
+		}
+	}
+}
+
 void batch_write(shared_memory* shm)
 {
 	char message[SHM_SIZE];
 	int idx = 0;
 
-	for (int i = 0; i < 10000; i++)
+	for (int i = 0; i < 100000; i++)
 	{
 		time_t current_time = time(NULL);
 		snprintf(message, SHM_SIZE, "Hello from C! %d", idx++);
@@ -140,6 +195,7 @@ void batch_write(shared_memory* shm)
 
 		if (buffer_offset + msg_len + 1 >= SHM_SIZE || difftime(current_time, last_flush_time) >= 1.0)
 		{
+			//printf("%d\n", buffer_offset + msg_len + 1);
 			flush_buffer(shm);
 		}
 
@@ -191,4 +247,3 @@ void sig_handler(int signo)
 	}
 }
 #endif
-
