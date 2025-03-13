@@ -3,6 +3,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+static inline short host_to_network_short(short host)
+{
+	return ((host & 0xFF) << 8) | ((host >> 8) & 0xFF);
+}
+
+static inline short network_to_host_short(short network)
+{
+	return ((network & 0xFF) << 8) | ((network >> 8) & 0xFF);
+}
+
 void shared_memory_init(shared_memory* shm)
 {
 #ifdef _WIN32
@@ -98,6 +108,7 @@ void shared_memory_read(shared_memory* shm, char* buffer)
 	{
 		printf("ReleaseSemaphore error: %d\n", GetLastError());
 	}*/
+
 	WaitForSingleObject(shm->hSemWrite, INFINITE);
 	strncpy(buffer, (char*)shm->pBuf, SHM_SIZE);
 	SetEvent(shm->hSemRead);
@@ -124,12 +135,43 @@ void shared_memory_write(shared_memory* shm, const char* message)
 	{
 		printf("ReleaseSemaphore error: %d\n", GetLastError());
 	}*/
+
 	WaitForSingleObject(shm->hSemRead, INFINITE);
 	strncpy((char*)shm->pBuf, message, SHM_SIZE);
 	SetEvent(shm->hSemWrite);
 #else
 	sem_wait(shm->sem_read);
 	strncpy(shm->shm_base, message, SHM_SIZE);
+	sem_post(shm->sem_write);
+#endif
+}
+
+void shared_memory_read_binary(shared_memory* shm, char* buffer, short* length)
+{
+#ifdef _WIN32
+	WaitForSingleObject(shm->hSemWrite, INFINITE);
+	*length = network_to_host_short(*(short*)shm->pBuf);
+	memcpy(buffer, (char*)shm->pBuf + 2, *length);
+	SetEvent(shm->hSemRead);
+#else
+	sem_wait(shm->sem_write);
+	*length = network_to_host_short(*(short*)shm->shm_base);
+	memcpy(buffer, shm->shm_base + 2, *length);
+	sem_post(shm->sem_read);
+#endif
+}
+
+void shared_memory_write_binary(shared_memory* shm, const char* data, short length)
+{
+#ifdef _WIN32
+	WaitForSingleObject(shm->hSemRead, INFINITE);
+	*(short*)shm->pBuf = host_to_network_short(length);
+	memcpy((char*)shm->pBuf + 2, data, length);
+	SetEvent(shm->hSemWrite);
+#else
+	sem_wait(shm->sem_read);
+	*(short*)shm->shm_base = host_to_network_short(length);
+	memcpy(shm->shm_base + 2, data, length);
 	sem_post(shm->sem_write);
 #endif
 }
