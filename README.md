@@ -22,6 +22,8 @@ The C program consists of two source files:
 
 - **test_write**: Continuously writes messages to shared memory.
 - **test_read**: Continuously reads messages from shared memory.
+- **batch_write**: Write messages continuously in batches to shared memory.
+- **batch_read**: Read messages continuously in batches from shared memory.
 
 ### Python Program (`shared_memory.py`)
 
@@ -38,6 +40,8 @@ The Python script (`main.py`) contains main functionalities related to data proc
 
 - **test_write**: Continuously writes messages to shared memory.
 - **test_read**: Continuously reads messages from shared memory.
+- **batch_write**: Write messages continuously in batches to shared memory.
+- **batch_read**: Read messages continuously in batches from shared memory.
 
 ### Integration with Kafka or MQTT
 
