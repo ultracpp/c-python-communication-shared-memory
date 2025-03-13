@@ -16,9 +16,10 @@
 '''
 import sys
 import time
-from shared_memory import init_shared_memory, read_from_shared_memory, write_to_shared_memory, release_shared_memory
-
-SHM_SIZE = 4096
+from shared_memory import init_shared_memory, release_shared_memory
+from shared_memory import read_from_shared_memory, write_to_shared_memory
+from shared_memory import read_binary_from_shared_memory, write_binary_to_shared_memory
+from shared_memory import SHM_SIZE
 
 def wait_semaphore(sem, is_win32):
 	if is_win32:
@@ -54,6 +55,27 @@ def test_write(shm, sem_read, sem_write, is_win32):
 			time.sleep(0.001)
 	except KeyboardInterrupt:
 		print("Write test stopped by user")
+
+def test_read_binary(shm, sem_read, sem_write, is_win32):
+	while True:
+		wait_semaphore(sem_write, is_win32)
+		data = read_binary_from_shared_memory(shm)
+		signal_semaphore(sem_read, is_win32)
+		if data:
+			print(f"Received binary data: {list(data)} (length: {len(data)})")
+
+def test_write_binary(shm, sem_read, sem_write, is_win32):
+	idx = 0
+	try:
+		while True:
+			message_to_write = bytes([idx % 256, 0xAA, 0xBB, 0xCC])
+			wait_semaphore(sem_read, is_win32)
+			write_binary_to_shared_memory(shm, message_to_write)
+			signal_semaphore(sem_write, is_win32)
+			idx += 1
+			time.sleep(0.001)
+	except KeyboardInterrupt:
+		print("Binary write test stopped by user")
 
 def batch_write(shm, sem_read, sem_write, is_win32):
 	buffer = []
@@ -91,14 +113,15 @@ def batch_read(shm, sem_read, sem_write, is_win32):
 		signal_semaphore(sem_read, is_win32)
 		if message:
 			print("================")
+			print(f"{message}")
 			for line in message.split('\n'):
 				if line:
 					print(f"{line}")
 
 def main(mode):
-	if mode == 'batch_read':
+	if mode == 'bin_read' or mode == 'batch_read':
 		init_mode = 'read'
-	elif mode == 'batch_write':
+	elif mode == 'bin_write' or mode == 'batch_write':
 		init_mode = 'write'
 	else:
 		init_mode = mode
@@ -110,6 +133,10 @@ def main(mode):
 			test_read(shm, sem_read, sem_write, is_win32)
 		elif mode == 'write':
 			test_write(shm, sem_read, sem_write, is_win32)
+		elif mode == 'bin_read':
+			test_read_binary(shm, sem_read, sem_write, is_win32)
+		elif mode == 'bin_write':
+			test_write_binary(shm, sem_read, sem_write, is_win32)
 		elif mode == 'batch_write':
 			batch_write(shm, sem_read, sem_write, is_win32)
 		elif mode == 'batch_read':
@@ -120,7 +147,11 @@ def main(mode):
 		release_shared_memory(shm, sem_read)
 
 if __name__ == "__main__":
-	mode = 'batch_read'
+	mode = 'batch_read'  # 기본 모드 설정
 	#mode = 'batch_write'
+	#mode = 'bin_read'
+	#mode = 'bin_write'
+	#mode = 'read'
+	#mode = 'write'
 	main(mode)
 
