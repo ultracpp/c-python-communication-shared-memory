@@ -57,6 +57,8 @@ extern "C"
 	void shared_memory_init(shared_memory* shm);
 	void shared_memory_read(shared_memory* shm, char* buffer);
 	void shared_memory_write(shared_memory* shm, const char* message);
+	void shared_memory_read_binary(shared_memory* shm, char* buffer, short* length);
+	void shared_memory_write_binary(shared_memory* shm, const char* data, short length);
 	void shared_memory_release(shared_memory* shm);
 
 #ifdef __cplusplus
