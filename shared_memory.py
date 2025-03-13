@@ -19,7 +19,7 @@ import sys
 import os
 
 SHM_NAME = "/my_shared_memory"
-SHM_SIZE = 1024
+SHM_SIZE = 4096
 SEM_READ_NAME = "/my_semaphore_read"
 SEM_WRITE_NAME = "/my_semaphore_write"
 
