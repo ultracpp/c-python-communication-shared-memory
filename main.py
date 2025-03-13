@@ -18,7 +18,7 @@ import sys
 import time
 from shared_memory import init_shared_memory, read_from_shared_memory, write_to_shared_memory, release_shared_memory
 
-SHM_SIZE = 1024
+SHM_SIZE = 4096
 
 def wait_semaphore(sem, is_win32):
 	if is_win32:
